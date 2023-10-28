@@ -79,8 +79,8 @@ fn main() {
 
 
 
-    let height = 2000;
-    let width = 2000;
+    let height = 1000;
+    let width = 1000;
 
     let xa = -2.0;
     let xb = 1.0;
@@ -105,14 +105,34 @@ fn main() {
         let offset = (y * width as u32 + x) as usize;
         let it = data[offset];
 
-        let red = (((max_it as f64 - it as f64) / max_it as f64) * 255.0) as u8;
-        let (green, blue) = (red, red);
+        let color = get_color(&pallets[1], (it as f64) / (max_it as f64));
 
-        *pixel = image::Rgb([red, green, blue]);
+        *pixel = color;
     }
 
     img.save(path::Path::new("fractal.png")).unwrap();
 
+}
+
+
+fn get_color(pallet: &Vec<image::Rgb<u8>>, value: f64) -> image::Rgb<u8> {    
+    for i in 0..pallet.len() - 1 {
+        let min = (i as f64) / (pallet.len() as f64);
+        let max = ((i + 1) as f64) / (pallet.len() as f64);
+
+        if value >= min && value <= max {
+            let v = (value - min) / (max - min);
+            // use rgb palette (palette[4])
+
+            return image::Rgb::<u8>([
+                (pallet[i].0[0] as f64 * (1.0 - v) + pallet[i + 1].0[0] as f64 * v) as u8,
+                (pallet[i].0[1] as f64 * (1.0 - v) + pallet[i + 1].0[1] as f64 * v) as u8,
+                (pallet[i].0[2] as f64 * (1.0 - v) + pallet[i + 1].0[2] as f64 * v) as u8,
+            ]);
+        }
+    }
+
+    return image::Rgb([0, 0, 0]);
 }
 
 /*
